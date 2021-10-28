@@ -7,7 +7,6 @@ import java.net.Socket;
 
 public class EchoClient {
 	public static final int PORT_NUMBER = 6013;
-	public static final int BUFFER_SIZE = 1024;
 
 	static InputStream socketIn;
 	static OutputStream socketOut;
@@ -23,21 +22,24 @@ public class EchoClient {
     	}
 
     	try {
+		//Create the socket and open the streams
       		socket = new Socket(serverName, PORT_NUMBER);
      		socketIn = socket.getInputStream();
       		socketOut = socket.getOutputStream();
-     		byte[] buffer = new byte[BUFFER_SIZE];
-     		int bytesRead;
 
+		//Create the thread that reads from the standard input and writes to the server
 		Thread firstThread = new Thread(EchoClient::readFromUser);
 		firstThread.start();
 
+		//Create the thread that reads from the server and writes to the standard output
 		Thread secondThread = new Thread(EchoClient::readFromServer);
 		secondThread.start();
 
+		//Ensure that the threads are not being closed before they are done communicating
      	 	firstThread.join();
 		secondThread.join();
 
+		//Close the socket
       		socket.close();
     	} catch (IOException ioe) {
       		System.err.println("Unexpected exception when talking to server:");
@@ -49,26 +51,30 @@ public class EchoClient {
 	public static void readFromUser(){
 		int byteRead;
 		try{
+			//Read from the standard input until it reaches the last byte
 			while((byteRead = System.in.read()) != -1){
-			socketOut.write(byteRead);
-			socketOut.flush();
+				socketOut.write(byteRead);
+				//Ensure that all of the data has transferred
+				socketOut.flush();
 			}
 			socket.shutdownOutput();
 		} catch(IOException ioe){
-		System.err.println("Unexpected exception when talking to server:");
-		ioe.printStackTrace();
+			System.err.println("Unexpected exception when talking to server:");
+			ioe.printStackTrace();
 		}
 	}
 	public static void readFromServer(){
 		int byteRead;
 		try{
+			//Read from the server until it reaches the last byte
 			while((byteRead = socketIn.read()) != -1){
-			System.out.write(byteRead);
-			System.out.flush();
+				System.out.write(byteRead);
+				//Ensure that all the data has transferred
+				System.out.flush();
 			} 	
 		} catch(IOException ioe){
-		System.err.println("Unexpected exception when reading from server:");
-		ioe.printStackTrace();
+			System.err.println("Unexpected exception when reading from server:");
+			ioe.printStackTrace();
 		}
 	}
 }
