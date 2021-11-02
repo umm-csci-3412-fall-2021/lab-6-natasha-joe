@@ -1,11 +1,20 @@
 # Experimental results
 
-_Briefly (you don't need to write a lot) document the results of your
-experiments with throwing a bunch of clients at your server, as described
-in the lab write-up. You should probably delete or incorporate this text
-into your write-up._
+We compared two servers using the lab machine Serenity which has 4 cores:
 
-_You should indicate here what variations you tried (every connection gets
-a new thread, using a threadpool of size X, etc., etc.), and what the
-results were like when you spun up a bunch of threads that send
-decent-sized files to the server._
+1. Our final server, which creates a new thread for each incoming connection, and
+2. the server in `test/sampleBin`, which is single-threaded.
+
+To test the performance of these servers, we created a number of connections,
+each of which sent the `test/etc/words.txt` file to the server. Then, we
+measured how long it took the server to finish handling all connections.
+
+| # of connections | Threaded server time taken | Unthreaded server time taken |
+| ---------------- | -------------------------- | ---------------------------- |
+| 10               | 1 sec                      | 2 sec                        |
+| 30               | 6 sec                      | 7 sec                        |
+| 100              | 21 sec                     | 29 sec                       |
+| 150              | 35 sec                     | 37 sec                       |
+
+With these results, we can see that the threaded server is slightly faster than the
+unthreaded server across a variety of load levels.

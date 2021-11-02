@@ -7,25 +7,44 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class EchoServer {
-	
-	// REPLACE WITH PORT PROVIDED BY THE INSTRUCTOR
-	public static final int PORT_NUMBER = 0; 
-	public static void main(String[] args) throws IOException, InterruptedException {
-		EchoServer server = new EchoServer();
-		server.start();
-	}
+  public static final int PORT_NUMBER = 6013;
+  public static final int BUFFER_SIZE = 1024;
 
-	private void start() throws IOException, InterruptedException {
-		ServerSocket serverSocket = new ServerSocket(PORT_NUMBER);
-		while (true) {
-			Socket socket = serverSocket.accept();
+  public static void main(String[] args) {
+    try {
+      ServerSocket serverSocket = new ServerSocket(PORT_NUMBER);
 
-			// Put your code here.
-			// This should do very little, essentially:
-			//   * Construct an instance of your runnable class
-			//   * Construct a Thread with your runnable
-			//      * Or use a thread pool
-			//   * Start that thread
+      while (true) {
+        Socket socketToClient = serverSocket.accept();
+	new Thread(new ConnectionHandler(socketToClient)).start();
+      }
+    } catch (IOException ioe) {
+      System.err.println("Unexpected exception:");
+      ioe.printStackTrace();
+    }
+  }
+	public static class ConnectionHandler implements Runnable{ 
+  		private Socket socket;
+
+		public ConnectionHandler(Socket socket){
+			this.socket = socket;
 		}
-	}
+
+		@Override
+		public void run(){
+			try{
+				InputStream in = socket.getInputStream();
+				OutputStream out = socket.getOutputStream();
+				int byteRead;
+				while((byteRead = in.read()) != -1){
+					out.write(byteRead);
+					out.flush();
+				}
+				socket.shutdownOutput();
+			} catch(IOException e){
+				System.err.println("Unexpected exception:");
+				e.printStackTrace();
+			}
+		}
+	}	
 }
