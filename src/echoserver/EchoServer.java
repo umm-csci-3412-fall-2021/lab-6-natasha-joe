@@ -16,49 +16,35 @@ public class EchoServer {
 
       while (true) {
         Socket socketToClient = serverSocket.accept();
-        InputStream in = socketToClient.getInputStream();
-        OutputStream out = socketToClient.getOutputStream();
-        byte[] buffer = new byte[BUFFER_SIZE];
-
-        // Read from the socket and echo any data back.
-        // When the client closes their "output" half of the socket, end the
-        // loop.
-        int bytesRead;
-        while ((bytesRead = in.read(buffer)) != -1) {
-          System.out.println("Yay I got data!!");
-		out.write(buffer, 0, bytesRead);
-          	out.flush();
-        }
-
-        // Then, close our "output" half of the socket.
-        socketToClient.shutdownOutput();
+	new Thread(new ConnectionHandler(socketToClient)).start();
       }
     } catch (IOException ioe) {
       System.err.println("Unexpected exception:");
       ioe.printStackTrace();
     }
   }
+	public static class ConnectionHandler implements Runnable{ 
+  		private Socket socket;
+
+		public ConnectionHandler(Socket socket){
+			this.socket = socket;
+		}
+
+		@Override
+		public void run(){
+			try{
+				InputStream in = socket.getInputStream();
+				OutputStream out = socket.getOutputStream();
+				int byteRead;
+				while((byteRead = in.read()) != -1){
+					out.write(byteRead);
+					out.flush();
+				}
+				socket.shutdownOutput();
+			} catch(IOException e){
+				System.err.println("Unexpected exception:");
+				e.printStackTrace();
+			}
+		}
+	}	
 }
-//public class EchoServer {
-	
-	// REPLACE WITH PORT PROVIDED BY THE INSTRUCTOR
-//	public static final int PORT_NUMBER = 0; 
-//	public static void main(String[] args) throws IOException, InterruptedException {
-//		EchoServer server = new EchoServer();
-//		server.start();
-//	}
-
-//	private void start() throws IOException, InterruptedException {
-//		ServerSocket serverSocket = new ServerSocket(PORT_NUMBER);
-//		while (true) {
-//			Socket socket = serverSocket.accept();
-
-			// Put your code here.
-			// This should do very little, essentially:
-			//   * Construct an instance of your runnable class
-			//   * Construct a Thread with your runnable
-			//      * Or use a thread pool
-			//   * Start that thread
-//		}
-//	}
-//}
