@@ -1,6 +1,6 @@
 # Experimental results
 
-We compared two servers:
+We compared two servers using the lab machine Serenity which has 4 cores:
 
 1. Our final server, which creates a new thread for each incoming connection, and
 2. the server in `test/sampleBin`, which is single-threaded.
